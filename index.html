@@ -55,21 +55,40 @@
         <textarea id="messageInput" rows="3" placeholder="예: 물 마실 시간입니다. 스트레칭을 시작하세요.">타이머가 끝났습니다. 다시 시작합니다.</textarea>
       </div>
 
-      <div class="sound-control">
-        <div>
-          <label for="volumeSlider">사운드 볼륨</label>
-          <p>알림음과 읽어주기 음성 크기를 0%부터 100%까지 조절할 수 있습니다.</p>
+      <div class="volume-controls">
+        <div class="volume-card">
+          <div>
+            <label for="soundVolumeSlider">알림음 볼륨</label>
+            <p>타이머가 끝날 때 나는 짧은 알림음 크기입니다.</p>
+          </div>
+          <div class="volume-row">
+            <input id="soundVolumeSlider" type="range" min="0" max="100" value="70" />
+            <strong id="soundVolumeValue">70%</strong>
+          </div>
         </div>
-        <div class="volume-row">
-          <input id="volumeSlider" type="range" min="0" max="100" value="70" />
-          <strong id="volumeValue">70%</strong>
+
+        <div class="volume-card">
+          <div>
+            <label for="voiceVolumeSlider">읽어주기 음성 볼륨</label>
+            <p>입력한 문장을 읽어주는 음성 크기입니다. 기본값은 브라우저 최대치입니다.</p>
+          </div>
+          <div class="volume-row">
+            <input id="voiceVolumeSlider" type="range" min="0" max="100" value="100" />
+            <strong id="voiceVolumeValue">100%</strong>
+          </div>
         </div>
       </div>
+
+      <label class="boost-row">
+        <input id="voiceBoostCheckbox" type="checkbox" checked />
+        <span>음성 강조 모드 사용</span>
+        <small>브라우저 최대 음량으로 읽고, 문장이 짧을 때 한 번 더 읽어 더 잘 들리게 합니다.</small>
+      </label>
 
       <div class="button-row">
         <button id="toggleBtn" class="primary-button" type="button">ON</button>
         <button id="resetBtn" class="ghost-button" type="button">초기화</button>
-        <button id="testSoundBtn" class="ghost-button" type="button">사운드 테스트</button>
+        <button id="testSoundBtn" class="ghost-button" type="button">알림음 테스트</button>
         <button id="speakTestBtn" class="ghost-button" type="button">문장 읽기 테스트</button>
       </div>
     </section>
@@ -103,6 +122,6 @@
     타이머 종료! 다시 시작합니다.
   </div>
 
-  <script src="script.js?v=20260704-3"></script>
+  <script src="script.js?v=20260704-5"></script>
 </body>
 </html>
