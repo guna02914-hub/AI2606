@@ -3,177 +3,100 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Reclaiming Your Brain | Learning Note</title>
+  <title>Study Alarm</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="page-loader" aria-hidden="true">
-    <div class="loader-panel top">
-      <p>loading note</p>
-      <strong>100%</strong>
-    </div>
-    <div class="loader-line"><span></span></div>
-    <div class="loader-panel bottom">
-      <p>생각을 정리하는 중<span class="blink">_</span></p>
-    </div>
-  </div>
-
-  <header class="site-header">
-    <a class="brand" href="#top" aria-label="Learning Note Home">
-      <span class="brand-mark">AI</span>
-      <span>Learning Note</span>
-    </a>
-    <nav class="nav-links" aria-label="주요 메뉴">
-      <a href="#concept">Concept</a>
-      <a href="#notes">Notes</a>
-      <a href="#method">Method</a>
-      <a href="#reflection">Reflection</a>
-    </nav>
-  </header>
-
-  <main id="top">
-    <section class="hero dark-section">
-      <div class="hero-kicker">
-        <span>AI Prompt Engineering</span>
-        <span>2026.06</span>
-      </div>
-
-      <div class="hero-title-wrap">
-        <h1>
-          Reclaiming<br />
-          Your Brain<span class="cursor-box"></span>
-        </h1>
-      </div>
-
-      <div class="hero-bottom">
-        <p class="hero-copy">
-          무한 스크롤과 짧은 자극에 익숙해진 뇌를 다시 집중할 수 있는 방향으로
-          정리하는 학습 노트입니다.
+  <main class="app">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Daily Reminder</p>
+        <h1>Study Alarm</h1>
+        <p class="description">
+          정해둔 시간마다 알림을 울려주는 깔끔한 웹 알람입니다.
         </p>
-        <div class="hero-meta">
-          <span>Digital Habit</span>
-          <span>Ethical UX</span>
-          <span>Focus Design</span>
+      </div>
+
+      <div class="clock-card">
+        <span class="clock-label">현재 시간</span>
+        <strong id="currentTime">00:00:00</strong>
+        <span id="currentDate">0000.00.00</span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <div>
+          <h2>알람 추가</h2>
+          <p>제목과 시간을 입력한 뒤 알람을 추가하세요.</p>
         </div>
+        <button id="notificationBtn" class="ghost-button" type="button">
+          브라우저 알림 허용
+        </button>
       </div>
+
+      <form id="alarmForm" class="alarm-form">
+        <label>
+          알람 제목
+          <input
+            id="alarmTitle"
+            type="text"
+            placeholder="예: 공부 시작, 쉬는 시간"
+            maxlength="30"
+            required
+          />
+        </label>
+
+        <label>
+          알람 시간
+          <input id="alarmTime" type="time" required />
+        </label>
+
+        <label>
+          반복 설정
+          <select id="alarmRepeat">
+            <option value="daily">매일 반복</option>
+            <option value="once">한 번만</option>
+          </select>
+        </label>
+
+        <button class="primary-button" type="submit">알람 추가</button>
+      </form>
     </section>
 
-    <section id="concept" class="intro-section light-section">
-      <p class="section-label">What I learned</p>
-      <h2>
-        우리는 의지력만으로 집중력을 지키는 것이 아니라,
-        멈출 수 있는 구조와 환경을 직접 설계해야 합니다.
-      </h2>
-      <p class="intro-text">
-        이번 노트는 디지털 서비스가 사용자의 주의를 어떻게 붙잡는지 이해하고,
-        사용자가 스스로 통제권을 되찾을 수 있는 UX와 생활 습관을 정리하는 데 목적이 있습니다.
-      </p>
-    </section>
-
-    <section class="ascii-section dark-section" aria-label="디지털 패턴 시각화">
-      <div class="ascii-window">
-<pre>
-010101 SCROLL 010101 SCROLL 010101 SCROLL
-101010 FOCUS  101010 FOCUS  101010 FOCUS
-010101 PAUSE  010101 PAUSE  010101 PAUSE
-101010 RESET  101010 RESET  101010 RESET
-010101 BRAIN  010101 BRAIN  010101 BRAIN
-</pre>
-      </div>
-      <div class="ascii-caption">
-        <span>Pattern Break</span>
-        <p>반복되는 피드 구조를 인식하고, 스스로 멈춤 지점을 만드는 것이 첫 번째 단계입니다.</p>
-      </div>
-    </section>
-
-    <section id="notes" class="notes-section light-section">
-      <div class="section-head">
-        <p class="section-label">Core Notes</p>
-        <h2>핵심 개념 정리</h2>
+    <section class="panel">
+      <div class="panel-header">
+        <div>
+          <h2>알람 목록</h2>
+          <p id="alarmCount">등록된 알람이 없습니다.</p>
+        </div>
+        <button id="clearBtn" class="ghost-button danger" type="button">
+          전체 삭제
+        </button>
       </div>
 
-      <div class="note-list">
-        <article class="note-row">
-          <span class="note-number">01</span>
-          <div>
-            <h3>무한 스크롤</h3>
-            <p>콘텐츠의 끝을 흐리게 만들어 사용자가 계속 탐색하도록 유도하는 피드 구조입니다.</p>
-          </div>
-          <span class="note-tag">UX</span>
-        </article>
+      <ul id="alarmList" class="alarm-list"></ul>
 
-        <article class="note-row">
-          <span class="note-number">02</span>
-          <div>
-            <h3>팝콘 브레인</h3>
-            <p>짧고 강한 자극에 익숙해져 긴 글, 깊은 사고, 지속적인 집중이 어려워지는 상태입니다.</p>
-          </div>
-          <span class="note-tag">Brain</span>
-        </article>
-
-        <article class="note-row">
-          <span class="note-number">03</span>
-          <div>
-            <h3>윤리적 UX</h3>
-            <p>사용자를 오래 붙잡는 설계보다, 사용자가 스스로 선택하고 멈출 수 있게 돕는 디자인입니다.</p>
-          </div>
-          <span class="note-tag">Ethics</span>
-        </article>
-
-        <article class="note-row">
-          <span class="note-number">04</span>
-          <div>
-            <h3>통제권 회복</h3>
-            <p>포모도로, 알림 정리, 사용 시간 제한처럼 생활 속에서 집중 환경을 다시 설계하는 과정입니다.</p>
-          </div>
-          <span class="note-tag">Action</span>
-        </article>
-      </div>
-    </section>
-
-    <section id="method" class="method-section dark-section">
-      <div class="section-head inverse">
-        <p class="section-label">How to apply</p>
-        <h2>집중을 되찾는 3단계</h2>
-      </div>
-
-      <div class="method-grid">
-        <article>
-          <span>Step 1</span>
-          <h3>알아차리기</h3>
-          <p>내가 언제, 어떤 앱에서, 얼마나 오래 머무는지 기록합니다.</p>
-        </article>
-        <article>
-          <span>Step 2</span>
-          <h3>멈춤 만들기</h3>
-          <p>타이머, 화면 전환, 물리적 거리두기처럼 자동 행동을 끊는 장치를 둡니다.</p>
-        </article>
-        <article>
-          <span>Step 3</span>
-          <h3>다시 설계하기</h3>
-          <p>공부 시간에는 필요한 도구만 남기고, 자극적인 피드는 눈에 보이지 않게 정리합니다.</p>
-        </article>
-      </div>
-    </section>
-
-    <section id="reflection" class="reflection-section light-section">
-      <div class="reflection-title">
-        <p class="section-label">Reflection</p>
-        <h2>나의 학습 회고</h2>
-      </div>
-      <div class="reflection-card">
-        <p>
-          스마트폰 사용은 단순히 개인의 의지 문제만은 아니며, 서비스 구조와 환경 설계의 영향을 받습니다.
-          그래서 앞으로는 앱 사용을 무조건 참으려 하기보다, 멈출 수 있는 구조를 먼저 만들고
-          공부 환경을 더 의도적으로 설계해야겠다고 느꼈습니다.
-        </p>
+      <div id="emptyState" class="empty-state">
+        <div class="empty-icon">⏰</div>
+        <strong>아직 등록된 알람이 없습니다.</strong>
+        <p>첫 번째 알람을 추가해보세요.</p>
       </div>
     </section>
   </main>
 
-  <footer class="site-footer dark-section">
-    <p>Learning Note for AI Prompt Engineering</p>
-    <span>Designed with dark typography, ivory space, and orange focus signal.</span>
-  </footer>
+  <div id="alarmModal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div class="ring-icon">🔔</div>
+      <p class="modal-label">알람 시간입니다</p>
+      <h2 id="modalTitle">알람</h2>
+      <p id="modalTime">00:00</p>
+      <button id="stopAlarmBtn" class="primary-button" type="button">
+        알람 끄기
+      </button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
