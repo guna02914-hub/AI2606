@@ -3,8 +3,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const minutesInput = document.querySelector("#minutesInput");
   const secondsInput = document.querySelector("#secondsInput");
   const messageInput = document.querySelector("#messageInput");
-  const volumeSlider = document.querySelector("#volumeSlider");
-  const volumeValue = document.querySelector("#volumeValue");
+  const soundVolumeSlider = document.querySelector("#soundVolumeSlider");
+  const soundVolumeValue = document.querySelector("#soundVolumeValue");
+  const voiceVolumeSlider = document.querySelector("#voiceVolumeSlider");
+  const voiceVolumeValue = document.querySelector("#voiceVolumeValue");
+  const voiceBoostCheckbox = document.querySelector("#voiceBoostCheckbox");
   const timerDisplay = document.querySelector("#timerDisplay");
   const progressFill = document.querySelector("#progressFill");
   const toggleBtn = document.querySelector("#toggleBtn");
@@ -22,8 +25,11 @@ document.addEventListener("DOMContentLoaded", () => {
     minutesInput,
     secondsInput,
     messageInput,
-    volumeSlider,
-    volumeValue,
+    soundVolumeSlider,
+    soundVolumeValue,
+    voiceVolumeSlider,
+    voiceVolumeValue,
+    voiceBoostCheckbox,
     timerDisplay,
     progressFill,
     toggleBtn,
@@ -38,7 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
   ];
 
   if (requiredElements.some((element) => !element)) {
-    alert("타이머 화면 요소를 불러오지 못했습니다. 페이지를 새로고침해주세요.");
+    alert("타이머 화면 요소를 불러오지 못했습니다. Ctrl + F5로 새로고침해주세요.");
     return;
   }
 
@@ -69,13 +75,17 @@ document.addEventListener("DOMContentLoaded", () => {
       minutesInput.value = data.minutes ?? 25;
       secondsInput.value = data.seconds ?? 0;
       messageInput.value = data.message ?? "타이머가 끝났습니다. 다시 시작합니다.";
-      volumeSlider.value = data.volume ?? 70;
+      soundVolumeSlider.value = data.soundVolume ?? data.volume ?? 70;
+      voiceVolumeSlider.value = data.voiceVolume ?? 100;
+      voiceBoostCheckbox.checked = data.voiceBoost ?? true;
     } catch {
       hoursInput.value = 0;
       minutesInput.value = 25;
       secondsInput.value = 0;
       messageInput.value = "타이머가 끝났습니다. 다시 시작합니다.";
-      volumeSlider.value = 70;
+      soundVolumeSlider.value = 70;
+      voiceVolumeSlider.value = 100;
+      voiceBoostCheckbox.checked = true;
     }
   }
 
@@ -87,7 +97,9 @@ document.addEventListener("DOMContentLoaded", () => {
         minutes: getNumber(minutesInput.value),
         seconds: getNumber(secondsInput.value),
         message: messageInput.value.trim(),
-        volume: getNumber(volumeSlider.value),
+        soundVolume: getNumber(soundVolumeSlider.value),
+        voiceVolume: getNumber(voiceVolumeSlider.value),
+        voiceBoost: voiceBoostCheckbox.checked,
       })
     );
   }
@@ -139,7 +151,8 @@ document.addEventListener("DOMContentLoaded", () => {
     timerDisplay.textContent = formatTime(remainingSeconds);
     selectedTime.textContent = formatTime(durationSeconds);
     cycleCountEl.textContent = `${cycleCount}회`;
-    volumeValue.textContent = `${volumeSlider.value}%`;
+    soundVolumeValue.textContent = `${soundVolumeSlider.value}%`;
+    voiceVolumeValue.textContent = `${voiceVolumeSlider.value}%`;
 
     const progress = durationSeconds > 0
       ? ((durationSeconds - remainingSeconds) / durationSeconds) * 100
@@ -233,9 +246,7 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const AudioConstructor = window.AudioContext || window.webkitAudioContext;
 
-      if (!AudioConstructor) {
-        return null;
-      }
+      if (!AudioConstructor) return null;
 
       if (!audioContext) {
         audioContext = new AudioConstructor();
@@ -261,7 +272,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     stopSound();
 
-    const volume = getNumber(volumeSlider.value) / 100;
+    const volume = getNumber(soundVolumeSlider.value) / 100;
 
     if (volume <= 0) return;
 
@@ -287,7 +298,7 @@ document.addEventListener("DOMContentLoaded", () => {
     activeNodes = [firstOscillator, secondOscillator, gain];
 
     clearTimeout(soundTimer);
-    soundTimer = setTimeout(stopSound, 1200);
+    soundTimer = setTimeout(stopSound, 900);
   }
 
   function stopSound() {
@@ -317,11 +328,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
     stopSpeaking();
 
+    const voiceVolume = getNumber(voiceVolumeSlider.value) / 100;
+    const useBoost = voiceBoostCheckbox.checked;
+
+    // Web Speech API는 1.0을 초과한 실제 증폭을 허용하지 않습니다.
+    // 그래서 음성은 별도 볼륨으로 최대치까지 올리고, 강조 모드에서는 짧은 문장을 한 번 더 읽어 체감 가독성을 높입니다.
+    speakOnce(text, Math.min(1, voiceVolume));
+
+    if (useBoost && text.length <= 45 && voiceVolume > 0) {
+      setTimeout(() => {
+        if (isRunning || document.hasFocus()) {
+          speakOnce(text, Math.min(1, voiceVolume));
+        }
+      }, 900);
+    }
+  }
+
+  function speakOnce(text, volume) {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "ko-KR";
-    utterance.rate = 1;
+    utterance.rate = 0.95;
     utterance.pitch = 1;
-    utterance.volume = getNumber(volumeSlider.value) / 100;
+    utterance.volume = volume;
 
     const voices = window.speechSynthesis.getVoices();
     const koreanVoice = voices.find((voice) => voice.lang.toLowerCase().startsWith("ko"));
@@ -355,10 +383,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   messageInput.addEventListener("input", saveSettings);
 
-  volumeSlider.addEventListener("input", () => {
-    saveSettings();
-    render();
+  [soundVolumeSlider, voiceVolumeSlider].forEach((slider) => {
+    slider.addEventListener("input", () => {
+      saveSettings();
+      render();
+    });
   });
+
+  voiceBoostCheckbox.addEventListener("change", saveSettings);
 
   toggleBtn.addEventListener("click", () => {
     if (isRunning) {
