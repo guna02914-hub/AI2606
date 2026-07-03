@@ -13,7 +13,7 @@
         <p class="eyebrow">Infinite Repeat Timer</p>
         <h1>Interval Timer</h1>
         <p class="description">
-          원하는 시간 간격을 시간·분·초 단위로 입력하면, 타이머가 끝날 때마다 알림음이 울리고 자동으로 다시 시작됩니다.
+          원하는 시간 간격을 입력하면 타이머가 반복되고, 끝날 때마다 입력한 문장을 음성으로 읽어줍니다.
         </p>
       </div>
 
@@ -50,10 +50,15 @@
         </label>
       </div>
 
+      <div class="speech-control">
+        <label for="messageInput">읽어줄 문장</label>
+        <textarea id="messageInput" rows="3" placeholder="예: 물 마실 시간입니다. 스트레칭을 시작하세요.">타이머가 끝났습니다. 다시 시작합니다.</textarea>
+      </div>
+
       <div class="sound-control">
         <div>
           <label for="volumeSlider">사운드 볼륨</label>
-          <p>알림음 크기를 0%부터 100%까지 조절할 수 있습니다.</p>
+          <p>알림음과 읽어주기 음성 크기를 0%부터 100%까지 조절할 수 있습니다.</p>
         </div>
         <div class="volume-row">
           <input id="volumeSlider" type="range" min="0" max="100" value="70" />
@@ -65,6 +70,7 @@
         <button id="toggleBtn" class="primary-button" type="button">ON</button>
         <button id="resetBtn" class="ghost-button" type="button">초기화</button>
         <button id="testSoundBtn" class="ghost-button" type="button">사운드 테스트</button>
+        <button id="speakTestBtn" class="ghost-button" type="button">문장 읽기 테스트</button>
       </div>
     </section>
 
@@ -88,7 +94,7 @@
     <section class="guide-card">
       <h2>사용 방법</h2>
       <p>
-        원하는 시간·분·초를 입력한 뒤 <b>ON</b>을 누르세요. 타이머가 0초가 되면 알림음이 울리고, 자동으로 같은 시간으로 재시작됩니다. <b>OFF</b>를 누르기 전까지 계속 반복됩니다.
+        시간·분·초와 읽어줄 문장을 입력한 뒤 <b>ON</b>을 누르세요. 타이머가 0초가 되면 알림음이 울리고 입력한 문장을 읽은 뒤, 자동으로 같은 시간으로 재시작됩니다. <b>OFF</b>를 누르기 전까지 계속 반복됩니다.
       </p>
     </section>
   </main>
@@ -97,6 +103,6 @@
     타이머 종료! 다시 시작합니다.
   </div>
 
-  <script src="script.js?v=20260704-2"></script>
+  <script src="script.js?v=20260704-3"></script>
 </body>
 </html>
