@@ -1,1 +1,225 @@
-a
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Learning Notes</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="navbar">
+      <a href="#" class="logo">
+        <span class="logo-icon">✦</span>
+        <span>Learning Notes</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="#notes">학습노트</a>
+        <a href="#categories">카테고리</a>
+        <a href="#insights">핵심정리</a>
+        <a href="#reflection">회고</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero section">
+      <div class="hero-text">
+        <p class="eyebrow">20대 대학생의 학습 기록 공간</p>
+        <h1>배운 내용을 보기 좋게 정리하는<br />나만의 학습 노트 홈페이지</h1>
+        <p class="hero-description">
+          수업에서 배운 개념, 핵심 키워드, 느낀 점, 실생활 적용 아이디어를
+          노션처럼 깔끔한 카드형 구조로 정리합니다.
+        </p>
+
+        <div class="hero-actions">
+          <a href="#notes" class="btn primary">학습노트 보기</a>
+          <a href="#reflection" class="btn secondary">나의 회고 보기</a>
+        </div>
+      </div>
+
+      <aside class="hero-panel">
+        <div class="panel-header">
+          <span class="status-dot"></span>
+          <span>오늘의 학습 요약</span>
+        </div>
+        <h2>Reclaiming Your Brain</h2>
+        <p>
+          무한 스크롤, 팝콘 브레인, 윤리적 UX, 통제권 회복을 중심으로
+          디지털 환경과 집중력의 관계를 정리했습니다.
+        </p>
+        <div class="mini-tags">
+          <span>#디지털습관</span>
+          <span>#UX</span>
+          <span>#집중력</span>
+        </div>
+      </aside>
+    </section>
+
+    <section class="section dashboard">
+      <div class="stat-card">
+        <span class="stat-number">04</span>
+        <span class="stat-label">핵심 주제</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-number">08</span>
+        <span class="stat-label">정리 키워드</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-number">03</span>
+        <span class="stat-label">실천 방법</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-number">1</span>
+        <span class="stat-label">학습 자료</span>
+      </div>
+    </section>
+
+    <section id="categories" class="section">
+      <div class="section-title">
+        <p class="eyebrow">Category</p>
+        <h2>학습 카테고리</h2>
+      </div>
+
+      <div class="category-grid">
+        <article class="category-card">
+          <div class="card-icon">🧠</div>
+          <h3>집중력과 뇌</h3>
+          <p>주의력 지속 시간, 팝콘 브레인, 도파민 자극을 정리합니다.</p>
+        </article>
+
+        <article class="category-card">
+          <div class="card-icon">📱</div>
+          <h3>디지털 미디어</h3>
+          <p>무한 스크롤, 알고리즘 피드, 스마트폰 사용 습관을 다룹니다.</p>
+        </article>
+
+        <article class="category-card">
+          <div class="card-icon">🎨</div>
+          <h3>UX 디자인</h3>
+          <p>사용자 통제권을 존중하는 윤리적 UX 설계를 정리합니다.</p>
+        </article>
+
+        <article class="category-card">
+          <div class="card-icon">🌿</div>
+          <h3>실생활 적용</h3>
+          <p>디지털 피로를 줄이고 집중을 회복하는 방법을 기록합니다.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="notes" class="section notes-section">
+      <div class="section-title">
+        <p class="eyebrow">Notes</p>
+        <h2>핵심 학습 노트</h2>
+      </div>
+
+      <div class="notes-grid">
+        <article class="note-card featured">
+          <div class="note-top">
+            <span class="badge">핵심 개념</span>
+            <span class="date">Week 01</span>
+          </div>
+          <h3>팝콘 브레인</h3>
+          <p>
+            빠르고 강한 자극에 익숙해져 깊고 연속적인 사고가 어려워지는 상태를
+            의미합니다.
+          </p>
+          <div class="note-tags">
+            <span>#집중력</span>
+            <span>#디지털습관</span>
+          </div>
+        </article>
+
+        <article class="note-card">
+          <div class="note-top">
+            <span class="badge blue">UX</span>
+            <span class="date">Week 01</span>
+          </div>
+          <h3>무한 스크롤</h3>
+          <p>
+            사용자가 끝을 인식하기 어렵게 만들어 계속 탐색하게 하는 피드 구조입니다.
+          </p>
+          <div class="note-tags">
+            <span>#무한피드</span>
+            <span>#알고리즘</span>
+          </div>
+        </article>
+
+        <article class="note-card">
+          <div class="note-top">
+            <span class="badge green">Design</span>
+            <span class="date">Week 01</span>
+          </div>
+          <h3>윤리적 UX 설계</h3>
+          <p>
+            사용자를 오래 붙잡는 것보다 사용자가 스스로 멈추고 선택할 수 있도록
+            돕는 설계입니다.
+          </p>
+          <div class="note-tags">
+            <span>#EthicalUX</span>
+            <span>#사용자통제권</span>
+          </div>
+        </article>
+
+        <article class="note-card">
+          <div class="note-top">
+            <span class="badge purple">Action</span>
+            <span class="date">Week 01</span>
+          </div>
+          <h3>통제권 회복</h3>
+          <p>
+            끝을 소리 내어 정하기, 포모도로, 감각 착륙법처럼 환경을 바꿔 습관을
+            조절하는 방법입니다.
+          </p>
+          <div class="note-tags">
+            <span>#자기관리</span>
+            <span>#환경설계</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="insights" class="section insight-layout">
+      <div class="insight-card large">
+        <p class="eyebrow">Key Insight</p>
+        <h2>의지력보다 중요한 것은 환경 설계</h2>
+        <p>
+          디지털 서비스는 사용자의 주의를 오래 붙잡도록 설계될 수 있습니다.
+          따라서 개인의 의지만 탓하기보다, 멈출 수 있는 구조와 시각적 정지 신호를
+          스스로 만들어야 합니다.
+        </p>
+      </div>
+
+      <div class="todo-card">
+        <h3>복습 체크리스트</h3>
+        <label><input type="checkbox" /> 핵심 개념 한 줄 요약하기</label>
+        <label><input type="checkbox" /> 수업 내용과 연결해서 설명하기</label>
+        <label><input type="checkbox" /> 내 생활에 적용할 방법 1개 적기</label>
+        <label><input type="checkbox" /> 발표용 문장으로 정리하기</label>
+      </div>
+    </section>
+
+    <section id="reflection" class="section reflection">
+      <div class="section-title">
+        <p class="eyebrow">Reflection</p>
+        <h2>나의 회고</h2>
+      </div>
+
+      <div class="reflection-box">
+        <p>
+          이번 학습을 통해 스마트폰 사용이 단순한 습관 문제가 아니라,
+          서비스 구조와 환경 설계의 영향을 받는다는 점을 알게 되었다.
+          앞으로는 앱을 무작정 참는 방식보다, 사용 시간을 끊어주는 장치와
+          나만의 정지 신호를 만들어 집중력을 관리해야겠다고 느꼈다.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>© 2026 My Learning Notes. Designed for study, reflection, and growth.</p>
+  </footer>
+</body>
+</html>
