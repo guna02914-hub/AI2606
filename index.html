@@ -3,98 +3,98 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Study Alarm</title>
+  <title>Infinite Interval Timer</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <main class="app">
     <section class="hero">
       <div>
-        <p class="eyebrow">Daily Reminder</p>
-        <h1>Study Alarm</h1>
+        <p class="eyebrow">Infinite Repeat Timer</p>
+        <h1>Interval Timer</h1>
         <p class="description">
-          정해둔 시간마다 알림을 울려주는 깔끔한 웹 알람입니다.
+          원하는 시간 간격을 시간·분·초 단위로 입력하면, 타이머가 끝날 때마다 알림음이 울리고 자동으로 다시 시작됩니다.
         </p>
       </div>
 
-      <div class="clock-card">
-        <span class="clock-label">현재 시간</span>
-        <strong id="currentTime">00:00:00</strong>
-        <span id="currentDate">0000.00.00</span>
+      <div class="status-card">
+        <span class="status-label">현재 상태</span>
+        <strong id="statusText">OFF</strong>
+        <span id="statusDetail">타이머가 꺼져 있습니다.</span>
       </div>
     </section>
 
-    <section class="panel">
-      <div class="panel-header">
-        <div>
-          <h2>알람 추가</h2>
-          <p>제목과 시간을 입력한 뒤 알람을 추가하세요.</p>
+    <section class="timer-panel">
+      <div class="timer-display-wrap">
+        <p class="timer-label">남은 시간</p>
+        <div id="timerDisplay" class="timer-display">00:00:00</div>
+        <div class="progress-bar" aria-hidden="true">
+          <div id="progressFill" class="progress-fill"></div>
         </div>
-        <button id="notificationBtn" class="ghost-button" type="button">
-          브라우저 알림 허용
-        </button>
       </div>
 
-      <form id="alarmForm" class="alarm-form">
+      <div class="control-grid">
         <label>
-          알람 제목
-          <input
-            id="alarmTitle"
-            type="text"
-            placeholder="예: 공부 시작, 쉬는 시간"
-            maxlength="30"
-            required
-          />
+          시간
+          <input id="hoursInput" type="number" min="0" max="99" value="0" inputmode="numeric" />
         </label>
 
         <label>
-          알람 시간
-          <input id="alarmTime" type="time" required />
+          분
+          <input id="minutesInput" type="number" min="0" max="59" value="25" inputmode="numeric" />
         </label>
 
         <label>
-          반복 설정
-          <select id="alarmRepeat">
-            <option value="daily">매일 반복</option>
-            <option value="once">한 번만</option>
-          </select>
+          초
+          <input id="secondsInput" type="number" min="0" max="59" value="0" inputmode="numeric" />
         </label>
+      </div>
 
-        <button class="primary-button" type="submit">알람 추가</button>
-      </form>
+      <div class="sound-control">
+        <div>
+          <label for="volumeSlider">사운드 볼륨</label>
+          <p>알림음 크기를 0%부터 100%까지 조절할 수 있습니다.</p>
+        </div>
+        <div class="volume-row">
+          <input id="volumeSlider" type="range" min="0" max="100" value="70" />
+          <strong id="volumeValue">70%</strong>
+        </div>
+      </div>
+
+      <div class="button-row">
+        <button id="toggleBtn" class="primary-button" type="button">ON</button>
+        <button id="resetBtn" class="ghost-button" type="button">초기화</button>
+        <button id="testSoundBtn" class="ghost-button" type="button">사운드 테스트</button>
+      </div>
     </section>
 
-    <section class="panel">
-      <div class="panel-header">
-        <div>
-          <h2>알람 목록</h2>
-          <p id="alarmCount">등록된 알람이 없습니다.</p>
-        </div>
-        <button id="clearBtn" class="ghost-button danger" type="button">
-          전체 삭제
-        </button>
-      </div>
+    <section class="info-grid">
+      <article class="info-card">
+        <span>설정한 간격</span>
+        <strong id="selectedTime">00:25:00</strong>
+      </article>
 
-      <ul id="alarmList" class="alarm-list"></ul>
+      <article class="info-card">
+        <span>반복 횟수</span>
+        <strong id="cycleCount">0회</strong>
+      </article>
 
-      <div id="emptyState" class="empty-state">
-        <div class="empty-icon">⏰</div>
-        <strong>아직 등록된 알람이 없습니다.</strong>
-        <p>첫 번째 알람을 추가해보세요.</p>
-      </div>
+      <article class="info-card">
+        <span>반복 방식</span>
+        <strong>무한 반복</strong>
+      </article>
+    </section>
+
+    <section class="guide-card">
+      <h2>사용 방법</h2>
+      <p>
+        원하는 시간·분·초를 입력한 뒤 <b>ON</b>을 누르세요. 타이머가 0초가 되면 알림음이 울리고, 자동으로 같은 시간으로 재시작됩니다. <b>OFF</b>를 누르기 전까지 계속 반복됩니다.
+      </p>
     </section>
   </main>
 
-  <div id="alarmModal" class="modal hidden" role="dialog" aria-modal="true">
-    <div class="modal-card">
-      <div class="ring-icon">🔔</div>
-      <p class="modal-label">알람 시간입니다</p>
-      <h2 id="modalTitle">알람</h2>
-      <p id="modalTime">00:00</p>
-      <button id="stopAlarmBtn" class="primary-button" type="button">
-        알람 끄기
-      </button>
-    </div>
+  <div id="toast" class="toast hidden" role="status" aria-live="polite">
+    타이머 종료! 다시 시작합니다.
   </div>
 
   <script src="script.js"></script>
