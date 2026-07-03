@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const hoursInput = document.querySelector("#hoursInput");
   const minutesInput = document.querySelector("#minutesInput");
   const secondsInput = document.querySelector("#secondsInput");
+  const messageInput = document.querySelector("#messageInput");
   const volumeSlider = document.querySelector("#volumeSlider");
   const volumeValue = document.querySelector("#volumeValue");
   const timerDisplay = document.querySelector("#timerDisplay");
@@ -9,6 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const toggleBtn = document.querySelector("#toggleBtn");
   const resetBtn = document.querySelector("#resetBtn");
   const testSoundBtn = document.querySelector("#testSoundBtn");
+  const speakTestBtn = document.querySelector("#speakTestBtn");
   const statusText = document.querySelector("#statusText");
   const statusDetail = document.querySelector("#statusDetail");
   const selectedTime = document.querySelector("#selectedTime");
@@ -19,6 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
     hoursInput,
     minutesInput,
     secondsInput,
+    messageInput,
     volumeSlider,
     volumeValue,
     timerDisplay,
@@ -26,6 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
     toggleBtn,
     resetBtn,
     testSoundBtn,
+    speakTestBtn,
     statusText,
     statusDetail,
     selectedTime,
@@ -64,11 +68,13 @@ document.addEventListener("DOMContentLoaded", () => {
       hoursInput.value = data.hours ?? 0;
       minutesInput.value = data.minutes ?? 25;
       secondsInput.value = data.seconds ?? 0;
+      messageInput.value = data.message ?? "타이머가 끝났습니다. 다시 시작합니다.";
       volumeSlider.value = data.volume ?? 70;
     } catch {
       hoursInput.value = 0;
       minutesInput.value = 25;
       secondsInput.value = 0;
+      messageInput.value = "타이머가 끝났습니다. 다시 시작합니다.";
       volumeSlider.value = 70;
     }
   }
@@ -80,6 +86,7 @@ document.addEventListener("DOMContentLoaded", () => {
         hours: getNumber(hoursInput.value),
         minutes: getNumber(minutesInput.value),
         seconds: getNumber(secondsInput.value),
+        message: messageInput.value.trim(),
         volume: getNumber(volumeSlider.value),
       })
     );
@@ -177,7 +184,6 @@ document.addEventListener("DOMContentLoaded", () => {
     clearInterval(timerId);
     timerId = setInterval(tick, 250);
 
-    // 브라우저가 사운드를 막아도 타이머는 반드시 시작되도록 사운드 준비는 안전하게 처리합니다.
     prepareAudio();
   }
 
@@ -186,6 +192,7 @@ document.addEventListener("DOMContentLoaded", () => {
     clearInterval(timerId);
     timerId = null;
     stopSound();
+    stopSpeaking();
     setInputDisabled(false);
     remainingSeconds = durationSeconds;
     hideToast();
@@ -217,6 +224,7 @@ document.addEventListener("DOMContentLoaded", () => {
     endTime = Date.now() + durationSeconds * 1000;
 
     playSound();
+    speakMessage();
     showToast();
     render();
   }
@@ -279,7 +287,7 @@ document.addEventListener("DOMContentLoaded", () => {
     activeNodes = [firstOscillator, secondOscillator, gain];
 
     clearTimeout(soundTimer);
-    soundTimer = setTimeout(stopSound, 1800);
+    soundTimer = setTimeout(stopSound, 1200);
   }
 
   function stopSound() {
@@ -297,6 +305,40 @@ document.addEventListener("DOMContentLoaded", () => {
     activeNodes = [];
   }
 
+  function speakMessage() {
+    const text = messageInput.value.trim();
+
+    if (!text) return;
+
+    if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) {
+      alert("이 브라우저는 글자 읽어주기 기능을 지원하지 않습니다.");
+      return;
+    }
+
+    stopSpeaking();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "ko-KR";
+    utterance.rate = 1;
+    utterance.pitch = 1;
+    utterance.volume = getNumber(volumeSlider.value) / 100;
+
+    const voices = window.speechSynthesis.getVoices();
+    const koreanVoice = voices.find((voice) => voice.lang.toLowerCase().startsWith("ko"));
+
+    if (koreanVoice) {
+      utterance.voice = koreanVoice;
+    }
+
+    window.speechSynthesis.speak(utterance);
+  }
+
+  function stopSpeaking() {
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+  }
+
   function showToast() {
     toast.classList.remove("hidden");
     clearTimeout(showToast.timer);
@@ -310,6 +352,8 @@ document.addEventListener("DOMContentLoaded", () => {
   [hoursInput, minutesInput, secondsInput].forEach((input) => {
     input.addEventListener("input", updateFromInputs);
   });
+
+  messageInput.addEventListener("input", saveSettings);
 
   volumeSlider.addEventListener("input", () => {
     saveSettings();
@@ -326,6 +370,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   resetBtn.addEventListener("click", resetTimer);
   testSoundBtn.addEventListener("click", playSound);
+  speakTestBtn.addEventListener("click", speakMessage);
 
-  window.addEventListener("beforeunload", stopSound);
+  window.addEventListener("beforeunload", () => {
+    stopSound();
+    stopSpeaking();
+  });
 });
