@@ -1,332 +1,285 @@
-const currentTimeEl = document.querySelector("#currentTime");
-const currentDateEl = document.querySelector("#currentDate");
-const alarmForm = document.querySelector("#alarmForm");
-const alarmTitleInput = document.querySelector("#alarmTitle");
-const alarmTimeInput = document.querySelector("#alarmTime");
-const alarmRepeatInput = document.querySelector("#alarmRepeat");
-const alarmList = document.querySelector("#alarmList");
-const alarmCount = document.querySelector("#alarmCount");
-const emptyState = document.querySelector("#emptyState");
-const clearBtn = document.querySelector("#clearBtn");
-const notificationBtn = document.querySelector("#notificationBtn");
-const alarmModal = document.querySelector("#alarmModal");
-const modalTitle = document.querySelector("#modalTitle");
-const modalTime = document.querySelector("#modalTime");
-const stopAlarmBtn = document.querySelector("#stopAlarmBtn");
+const hoursInput = document.querySelector("#hoursInput");
+const minutesInput = document.querySelector("#minutesInput");
+const secondsInput = document.querySelector("#secondsInput");
+const volumeSlider = document.querySelector("#volumeSlider");
+const volumeValue = document.querySelector("#volumeValue");
+const timerDisplay = document.querySelector("#timerDisplay");
+const progressFill = document.querySelector("#progressFill");
+const toggleBtn = document.querySelector("#toggleBtn");
+const resetBtn = document.querySelector("#resetBtn");
+const testSoundBtn = document.querySelector("#testSoundBtn");
+const statusText = document.querySelector("#statusText");
+const statusDetail = document.querySelector("#statusDetail");
+const selectedTime = document.querySelector("#selectedTime");
+const cycleCountEl = document.querySelector("#cycleCount");
+const toast = document.querySelector("#toast");
 
-const STORAGE_KEY = "study-alarm-list";
+const STORAGE_KEY = "interval-timer-settings";
 
-let alarms = loadAlarms();
-let activeAudioContext = null;
-let activeOscillator = null;
-let alarmStopTimer = null;
+let durationSeconds = 25 * 60;
+let remainingSeconds = durationSeconds;
+let timerId = null;
+let endTime = 0;
+let isRunning = false;
+let cycleCount = 0;
+let audioContext = null;
+let soundTimer = null;
+let activeNodes = [];
 
-function loadAlarms() {
+loadSettings();
+updateFromInputs();
+render();
+
+function loadSettings() {
   const saved = localStorage.getItem(STORAGE_KEY);
 
-  if (!saved) {
-    return [];
-  }
+  if (!saved) return;
 
   try {
-    return JSON.parse(saved);
+    const data = JSON.parse(saved);
+    hoursInput.value = data.hours ?? 0;
+    minutesInput.value = data.minutes ?? 25;
+    secondsInput.value = data.seconds ?? 0;
+    volumeSlider.value = data.volume ?? 70;
   } catch {
-    return [];
+    hoursInput.value = 0;
+    minutesInput.value = 25;
+    secondsInput.value = 0;
+    volumeSlider.value = 70;
   }
 }
 
-function saveAlarms() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(alarms));
-}
-
-function formatDate(date) {
-  return new Intl.DateTimeFormat("ko-KR", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    weekday: "long",
-  }).format(date);
-}
-
-function updateClock() {
-  const now = new Date();
-
-  currentTimeEl.textContent = now.toLocaleTimeString("ko-KR", {
-    hour12: false,
-  });
-
-  currentDateEl.textContent = formatDate(now);
-
-  checkAlarms(now);
-}
-
-function createAlarmId() {
-  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-}
-
-function getTodayKey(date = new Date()) {
-  return date.toISOString().slice(0, 10);
-}
-
-function renderAlarms() {
-  alarmList.innerHTML = "";
-
-  const sortedAlarms = [...alarms].sort((a, b) => a.time.localeCompare(b.time));
-
-  sortedAlarms.forEach((alarm) => {
-    const item = document.createElement("li");
-    item.className = "alarm-item";
-
-    const repeatText = alarm.repeat === "daily" ? "매일 반복" : "한 번만";
-    const enabledText = alarm.enabled ? "활성화" : "비활성화";
-
-    item.innerHTML = `
-      <div class="alarm-time">${alarm.time}</div>
-      <div class="alarm-info">
-        <strong>${escapeHTML(alarm.title)}</strong>
-        <span>${repeatText} · ${enabledText}</span>
-      </div>
-      <button class="badge" type="button" data-toggle-id="${alarm.id}">
-        ${alarm.enabled ? "ON" : "OFF"}
-      </button>
-      <button class="icon-button" type="button" aria-label="알람 삭제" data-delete-id="${alarm.id}">
-        ×
-      </button>
-    `;
-
-    alarmList.appendChild(item);
-  });
-
-  emptyState.classList.toggle("hidden", alarms.length > 0);
-  clearBtn.classList.toggle("hidden", alarms.length === 0);
-
-  alarmCount.textContent =
-    alarms.length === 0
-      ? "등록된 알람이 없습니다."
-      : `총 ${alarms.length}개의 알람이 등록되어 있습니다.`;
-}
-
-function escapeHTML(text) {
-  const div = document.createElement("div");
-  div.textContent = text;
-  return div.innerHTML;
-}
-
-function addAlarm(event) {
-  event.preventDefault();
-
-  const title = alarmTitleInput.value.trim();
-  const time = alarmTimeInput.value;
-  const repeat = alarmRepeatInput.value;
-
-  if (!title || !time) {
-    alert("알람 제목과 시간을 모두 입력해주세요.");
-    return;
-  }
-
-  const alreadyExists = alarms.some(
-    (alarm) => alarm.time === time && alarm.title === title
+function saveSettings() {
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify({
+      hours: getNumber(hoursInput.value),
+      minutes: getNumber(minutesInput.value),
+      seconds: getNumber(secondsInput.value),
+      volume: getNumber(volumeSlider.value),
+    })
   );
+}
 
-  if (alreadyExists) {
-    alert("같은 제목과 시간의 알람이 이미 있습니다.");
-    return;
+function getNumber(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? Math.max(0, Math.floor(number)) : 0;
+}
+
+function clampInputs() {
+  hoursInput.value = Math.min(getNumber(hoursInput.value), 99);
+  minutesInput.value = Math.min(getNumber(minutesInput.value), 59);
+  secondsInput.value = Math.min(getNumber(secondsInput.value), 59);
+}
+
+function getInputSeconds() {
+  clampInputs();
+
+  const hours = getNumber(hoursInput.value);
+  const minutes = getNumber(minutesInput.value);
+  const seconds = getNumber(secondsInput.value);
+
+  return hours * 3600 + minutes * 60 + seconds;
+}
+
+function updateFromInputs() {
+  durationSeconds = getInputSeconds();
+
+  if (!isRunning) {
+    remainingSeconds = durationSeconds;
   }
 
-  alarms.push({
-    id: createAlarmId(),
-    title,
-    time,
-    repeat,
-    enabled: true,
-    lastTriggeredDate: null,
-  });
-
-  saveAlarms();
-  renderAlarms();
-  alarmForm.reset();
-  alarmRepeatInput.value = "daily";
+  saveSettings();
+  render();
 }
 
-function checkAlarms(now) {
-  const currentHour = String(now.getHours()).padStart(2, "0");
-  const currentMinute = String(now.getMinutes()).padStart(2, "0");
-  const currentTime = `${currentHour}:${currentMinute}`;
-  const todayKey = getTodayKey(now);
+function formatTime(totalSeconds) {
+  const safeSeconds = Math.max(0, totalSeconds);
+  const hours = Math.floor(safeSeconds / 3600);
+  const minutes = Math.floor((safeSeconds % 3600) / 60);
+  const seconds = safeSeconds % 60;
 
-  let hasChanged = false;
-
-  alarms.forEach((alarm) => {
-    if (!alarm.enabled) {
-      return;
-    }
-
-    const isSameTime = alarm.time === currentTime;
-    const wasAlreadyTriggeredToday = alarm.lastTriggeredDate === todayKey;
-
-    if (isSameTime && !wasAlreadyTriggeredToday) {
-      triggerAlarm(alarm);
-
-      alarm.lastTriggeredDate = todayKey;
-
-      if (alarm.repeat === "once") {
-        alarm.enabled = false;
-      }
-
-      hasChanged = true;
-    }
-  });
-
-  if (hasChanged) {
-    saveAlarms();
-    renderAlarms();
-  }
+  return [hours, minutes, seconds]
+    .map((value) => String(value).padStart(2, "0"))
+    .join(":");
 }
 
-function triggerAlarm(alarm) {
-  modalTitle.textContent = alarm.title;
-  modalTime.textContent = alarm.time;
-  alarmModal.classList.remove("hidden");
+function render() {
+  timerDisplay.textContent = formatTime(remainingSeconds);
+  selectedTime.textContent = formatTime(durationSeconds);
+  cycleCountEl.textContent = `${cycleCount}회`;
+  volumeValue.textContent = `${volumeSlider.value}%`;
 
-  playAlarmSound();
+  const progress = durationSeconds > 0
+    ? ((durationSeconds - remainingSeconds) / durationSeconds) * 100
+    : 0;
 
-  if ("Notification" in window && Notification.permission === "granted") {
-    new Notification("Study Alarm", {
-      body: `${alarm.time} · ${alarm.title}`,
-      icon: "",
-    });
-  }
+  progressFill.style.width = `${Math.min(100, Math.max(0, progress))}%`;
 
-  clearTimeout(alarmStopTimer);
-  alarmStopTimer = setTimeout(stopAlarm, 60_000);
-}
-
-function playAlarmSound() {
-  stopAlarmSound();
-
-  activeAudioContext = new AudioContext();
-  activeOscillator = activeAudioContext.createOscillator();
-
-  const gainNode = activeAudioContext.createGain();
-
-  activeOscillator.type = "sine";
-  activeOscillator.frequency.setValueAtTime(880, activeAudioContext.currentTime);
-
-  gainNode.gain.setValueAtTime(0.0001, activeAudioContext.currentTime);
-  gainNode.gain.exponentialRampToValueAtTime(
-    0.25,
-    activeAudioContext.currentTime + 0.04
-  );
-
-  activeOscillator.connect(gainNode);
-  gainNode.connect(activeAudioContext.destination);
-
-  activeOscillator.start();
-
-  const interval = setInterval(() => {
-    if (!activeOscillator || !activeAudioContext) {
-      clearInterval(interval);
-      return;
-    }
-
-    const frequency = activeOscillator.frequency.value === 880 ? 660 : 880;
-    activeOscillator.frequency.setValueAtTime(
-      frequency,
-      activeAudioContext.currentTime
-    );
-  }, 350);
-}
-
-function stopAlarmSound() {
-  if (activeOscillator) {
-    activeOscillator.stop();
-    activeOscillator.disconnect();
-    activeOscillator = null;
-  }
-
-  if (activeAudioContext) {
-    activeAudioContext.close();
-    activeAudioContext = null;
-  }
-}
-
-function stopAlarm() {
-  stopAlarmSound();
-  alarmModal.classList.add("hidden");
-  clearTimeout(alarmStopTimer);
-}
-
-function deleteAlarm(alarmId) {
-  alarms = alarms.filter((alarm) => alarm.id !== alarmId);
-  saveAlarms();
-  renderAlarms();
-}
-
-function toggleAlarm(alarmId) {
-  alarms = alarms.map((alarm) => {
-    if (alarm.id !== alarmId) {
-      return alarm;
-    }
-
-    return {
-      ...alarm,
-      enabled: !alarm.enabled,
-      lastTriggeredDate: null,
-    };
-  });
-
-  saveAlarms();
-  renderAlarms();
-}
-
-function clearAlarms() {
-  const confirmed = confirm("등록된 알람을 모두 삭제할까요?");
-
-  if (!confirmed) {
-    return;
-  }
-
-  alarms = [];
-  saveAlarms();
-  renderAlarms();
-}
-
-async function requestNotificationPermission() {
-  if (!("Notification" in window)) {
-    alert("이 브라우저는 알림 기능을 지원하지 않습니다.");
-    return;
-  }
-
-  const permission = await Notification.requestPermission();
-
-  if (permission === "granted") {
-    alert("브라우저 알림이 허용되었습니다.");
+  if (isRunning) {
+    document.body.classList.add("running");
+    toggleBtn.textContent = "OFF";
+    statusText.textContent = "ON";
+    statusDetail.textContent = "타이머가 무한 반복 중입니다.";
   } else {
-    alert("브라우저 알림이 허용되지 않았습니다.");
+    document.body.classList.remove("running");
+    toggleBtn.textContent = "ON";
+    statusText.textContent = "OFF";
+    statusDetail.textContent = "타이머가 꺼져 있습니다.";
   }
 }
 
-alarmForm.addEventListener("submit", addAlarm);
+function setInputDisabled(disabled) {
+  hoursInput.disabled = disabled;
+  minutesInput.disabled = disabled;
+  secondsInput.disabled = disabled;
+}
 
-alarmList.addEventListener("click", (event) => {
-  const deleteId = event.target.dataset.deleteId;
-  const toggleId = event.target.dataset.toggleId;
+function startTimer() {
+  updateFromInputs();
 
-  if (deleteId) {
-    deleteAlarm(deleteId);
+  if (durationSeconds <= 0) {
+    alert("시간, 분, 초 중 하나 이상을 입력해주세요.");
+    return;
   }
 
-  if (toggleId) {
-    toggleAlarm(toggleId);
+  prepareAudio();
+  isRunning = true;
+  remainingSeconds = durationSeconds;
+  endTime = Date.now() + durationSeconds * 1000;
+  setInputDisabled(true);
+  render();
+
+  clearInterval(timerId);
+  timerId = setInterval(tick, 250);
+}
+
+function stopTimer() {
+  isRunning = false;
+  clearInterval(timerId);
+  timerId = null;
+  stopSound();
+  setInputDisabled(false);
+  remainingSeconds = durationSeconds;
+  hideToast();
+  render();
+}
+
+function resetTimer() {
+  stopTimer();
+  cycleCount = 0;
+  updateFromInputs();
+  render();
+}
+
+function tick() {
+  if (!isRunning) return;
+
+  const millisecondsLeft = endTime - Date.now();
+  remainingSeconds = Math.max(0, Math.ceil(millisecondsLeft / 1000));
+  render();
+
+  if (millisecondsLeft <= 0) {
+    finishCycle();
+  }
+}
+
+function finishCycle() {
+  cycleCount += 1;
+  remainingSeconds = durationSeconds;
+  endTime = Date.now() + durationSeconds * 1000;
+
+  playSound();
+  showToast();
+  render();
+}
+
+function prepareAudio() {
+  if (!audioContext) {
+    audioContext = new AudioContext();
+  }
+
+  if (audioContext.state === "suspended") {
+    audioContext.resume();
+  }
+}
+
+function playSound() {
+  prepareAudio();
+  stopSound();
+
+  const volume = getNumber(volumeSlider.value) / 100;
+
+  if (volume <= 0) return;
+
+  const gain = audioContext.createGain();
+  gain.gain.setValueAtTime(0.0001, audioContext.currentTime);
+  gain.gain.exponentialRampToValueAtTime(volume * 0.35, audioContext.currentTime + 0.03);
+
+  const firstOscillator = audioContext.createOscillator();
+  const secondOscillator = audioContext.createOscillator();
+
+  firstOscillator.type = "sine";
+  secondOscillator.type = "triangle";
+  firstOscillator.frequency.setValueAtTime(880, audioContext.currentTime);
+  secondOscillator.frequency.setValueAtTime(1320, audioContext.currentTime);
+
+  firstOscillator.connect(gain);
+  secondOscillator.connect(gain);
+  gain.connect(audioContext.destination);
+
+  firstOscillator.start();
+  secondOscillator.start();
+
+  activeNodes = [firstOscillator, secondOscillator, gain];
+
+  clearTimeout(soundTimer);
+  soundTimer = setTimeout(stopSound, 1800);
+}
+
+function stopSound() {
+  clearTimeout(soundTimer);
+
+  activeNodes.forEach((node) => {
+    try {
+      if (typeof node.stop === "function") node.stop();
+      if (typeof node.disconnect === "function") node.disconnect();
+    } catch {
+      // 이미 정지된 노드는 무시합니다.
+    }
+  });
+
+  activeNodes = [];
+}
+
+function showToast() {
+  toast.classList.remove("hidden");
+  clearTimeout(showToast.timer);
+  showToast.timer = setTimeout(hideToast, 1600);
+}
+
+function hideToast() {
+  toast.classList.add("hidden");
+}
+
+[hoursInput, minutesInput, secondsInput].forEach((input) => {
+  input.addEventListener("input", updateFromInputs);
+});
+
+volumeSlider.addEventListener("input", () => {
+  saveSettings();
+  render();
+});
+
+toggleBtn.addEventListener("click", () => {
+  if (isRunning) {
+    stopTimer();
+  } else {
+    startTimer();
   }
 });
 
-clearBtn.addEventListener("click", clearAlarms);
-notificationBtn.addEventListener("click", requestNotificationPermission);
-stopAlarmBtn.addEventListener("click", stopAlarm);
+resetBtn.addEventListener("click", resetTimer);
+testSoundBtn.addEventListener("click", playSound);
 
-window.addEventListener("beforeunload", stopAlarmSound);
-
-renderAlarms();
-updateClock();
-setInterval(updateClock, 1000);
+window.addEventListener("beforeunload", stopSound);
